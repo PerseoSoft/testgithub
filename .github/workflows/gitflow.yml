@@ -1,0 +1,36 @@
+name: Git Flow Workflow
+
+on:
+  push:
+    branches:
+      - develop
+      - 'feature/*'
+      - 'hotfix/*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install Git Flow
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y git-flow
+
+    - name: Initialize Git Flow
+      run: |
+        git flow init -d
+
+    - name: Git Flow Action
+      run: |
+        git checkout ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/feature/') && 'develop' || github.ref }}
+        git flow ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/heads/feature/') && 'feature finish' || github.event_name == 'push' && startsWith(github.ref, 'refs/heads/hotfix/') && 'hotfix finish' || 'release finish' }} -m "Automated ${{ github.event_name }} by ${{ github.actor }}"
+
+    - name: Push changes
+      run: |
+        git push origin --tags
+        git push origin develop
+        git push origin master
