@@ -2,12 +2,6 @@ name: Git Flow PR Check
 
 on:
   pull_request:
-    branches:
-      - master
-      - develop
-      - feature/*
-      - hotfix/*
-      - release/*
 
 jobs:
   git-flow-check:
