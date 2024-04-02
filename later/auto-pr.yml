@@ -1,0 +1,38 @@
+name: Auto-Create PR from Master to Develop
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # This runs the job every day at midnight (UTC)
+  push:
+    branches:
+      - master
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Configure Git
+      run: |
+        git config --global user.email "action@github.com"
+        git config --global user.name "GitHub Action"
+
+    - name: Create PR if develop is behind master
+      run: |
+        git fetch origin develop
+        git checkout develop
+        git merge origin/master --ff-only
+        
+        # Check if develop is behind master
+        if git merge-base --is-ancestor origin/master develop; then
+          echo "develop is up-to-date with master."
+          exit 0
+        else
+          git push origin develop
+          hub pull-request -b develop -h master -m "Auto-create PR from master to develop"
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

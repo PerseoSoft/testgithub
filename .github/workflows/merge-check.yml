@@ -8,6 +8,8 @@ on:
       - reopened
       - labeled
       - unlabeled
+    branches:
+      - master
 
 jobs:
   check-merge-branch:
@@ -20,6 +22,8 @@ jobs:
     - name: Check PR source branch
       run: |
         SOURCE_BRANCH=$(jq -r ".pull_request.head.ref" "$GITHUB_EVENT_PATH")
+
+        echo $(.pull_request)
         
         if [[ "$SOURCE_BRANCH" != "hotfix"* && "$SOURCE_BRANCH" != "release"* ]]; then
           echo "Error: PR can only be merged from hotfix or release branches."
