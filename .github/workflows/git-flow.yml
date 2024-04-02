@@ -20,6 +20,16 @@ jobs:
     - name: Install Git
       run: sudo apt-get install git -y
 
+    - name: Verify branch name
+      run: |
+        BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})
+        if [[ "$BRANCH_NAME" =~ ^(master|develop|feature/.*|hotfix/.*|release/.*)$ ]]; then
+          echo "Branch name is valid."
+        else
+          echo "Invalid branch name. Allowed patterns: master, develop, feature/*, hotfix/*, release/*"
+          exit 1
+        fi
+
     - name: Check git flow
       run: |
         SOURCE_BRANCH=$(jq --raw-output .pull_request.head.ref "$GITHUB_EVENT_PATH")
