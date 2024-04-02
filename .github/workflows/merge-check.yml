@@ -8,6 +8,8 @@ on:
       - reopened
       - labeled
       - unlabeled
+  branches:
+    - master
 
 jobs:
   check-merge-branch:
