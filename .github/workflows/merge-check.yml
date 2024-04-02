@@ -1,0 +1,27 @@
+name: Merge Check
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+      - unlabeled
+
+jobs:
+  check-merge-branch:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
+    - name: Check PR source branch
+      run: |
+        SOURCE_BRANCH=$(jq -r ".pull_request.head.ref" "$GITHUB_EVENT_PATH")
+        
+        if [[ "$SOURCE_BRANCH" != "hotfix"* && "$SOURCE_BRANCH" != "release"* ]]; then
+          echo "Error: PR can only be merged from hotfix or release branches."
+          exit 1
+        fi
