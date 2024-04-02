@@ -25,21 +25,35 @@ jobs:
         SOURCE_BRANCH=$(jq --raw-output .pull_request.head.ref "$GITHUB_EVENT_PATH")
         TARGET_BRANCH=$(jq --raw-output .pull_request.base.ref "$GITHUB_EVENT_PATH")
 
-        if [[ "$SOURCE_BRANCH" == "develop" && "$TARGET_BRANCH" != release* ]]; then
-          echo "Source branch is 'develop' and target branch does not start with 'release'."
-          exit 1
-        else
-          echo "Branches are valid."
-          exit 0
-        fi
-
-
-        echo $TEST
-        echo $GITHUB_EVENT_PATH
         echo $SOURCE_BRANCH
         echo $TARGET_BRANCH
 
-        if [[ "$SOURCE_BRANCH" != "hotfix"* && "$SOURCE_BRANCH" != "release"* ]]; then
-          echo "Error: PR can only be merged from hotfix or release branches."
-          #exit 1
+        if [[ "$SOURCE_BRANCH" == feature* && "$TARGET_BRANCH" != "develop" ]]; then
+          echo "Source branch is 'feature' and target branch does not start with 'release'."
+          exit 1
         fi
+
+        if [[ "$SOURCE_BRANCH" == "develop" && "$TARGET_BRANCH" != release* ]]; then
+          echo "Source branch is 'develop' and target branch does not start with 'release'."
+          exit 1
+        fi
+
+        if [[ "$SOURCE_BRANCH" == hotfix* && "$TARGET_BRANCH" != "master" ]]; then
+          echo "Source branch is 'hotfix' and target branch does not start with 'master'."
+          exit 1
+        fi
+
+        if [[ "$SOURCE_BRANCH" == release* && "$TARGET_BRANCH" != "master" ]]; then
+          echo "Source branch is 'release' and target branch does not start with 'master'."
+          exit 1
+        fi
+
+
+        if [[ "$SOURCE_BRANCH" == "master" && "$TARGET_BRANCH" != "develop" ]]; then
+          echo "Source branch is 'release' and target branch does not start with 'master'."
+          exit 1
+        fi
+
+
+        echo "PR not valid"
+        exit 1
