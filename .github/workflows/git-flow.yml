@@ -28,22 +28,22 @@ jobs:
         echo $SOURCE_BRANCH
         echo $TARGET_BRANCH
 
-        if [[ "$SOURCE_BRANCH" == feature* && "$TARGET_BRANCH" != "develop" ]]; then
+        if [[ "$SOURCE_BRANCH" == feature/* && "$TARGET_BRANCH" != "develop" ]]; then
           echo "Source branch is 'feature' and target branch does not start with 'release'."
           exit 1
         fi
 
-        if [[ "$SOURCE_BRANCH" == "develop" && "$TARGET_BRANCH" != release* ]]; then
+        if [[ "$SOURCE_BRANCH" == "develop" && "$TARGET_BRANCH" != release/* ]]; then
           echo "Source branch is 'develop' and target branch does not start with 'release'."
           exit 1
         fi
 
-        if [[ "$SOURCE_BRANCH" == hotfix* && "$TARGET_BRANCH" != "master" ]]; then
+        if [[ "$SOURCE_BRANCH" == hotfix/* && "$TARGET_BRANCH" != "master" ]]; then
           echo "Source branch is 'hotfix' and target branch does not start with 'master'."
           exit 1
         fi
 
-        if [[ "$SOURCE_BRANCH" == release* && "$TARGET_BRANCH" != "master" ]]; then
+        if [[ "$SOURCE_BRANCH" == release/* && "$TARGET_BRANCH" != "master" ]]; then
           echo "Source branch is 'release' and target branch does not start with 'master'."
           exit 1
         fi
