@@ -1,0 +1,56 @@
+name: Git Flow PR Check
+
+on:
+  pull_request:
+    branches:
+      - master
+      - develop
+      - feature/*
+      - hotfix/*
+      - release/*
+
+jobs:
+  git-flow-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
+    - name: Install Git
+      run: sudo apt-get install git -y
+
+    - name: Verify branch name
+      run: |
+        BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})
+        if [[ "$BRANCH_NAME" =~ ^(master|develop|feature/.*|hotfix/.*|release/.*)$ ]]; then
+          echo "Branch name is valid."
+        else
+          echo "Invalid branch name. Allowed patterns: master, develop, feature/*, hotfix/*, release/*"
+          exit 1
+        fi
+
+    - name: Verify commit messages (TODO ensure jira project)
+      run: |
+        git fetch origin ${GITHUB_REF}
+        git log --pretty=format:"%s" origin/${GITHUB_REF#refs/heads/}..HEAD | while read -r line ; do
+          if [[ ! "$line" =~ ^(feature|hotfix|release)/.* ]]; then
+            echo "Invalid commit message. Must start with 'feature/', 'hotfix/', or 'release/'."
+            exit 1
+          fi
+        done
+
+    - name: Check git flow
+      run: |
+        SOURCE_BRANCH=$(jq -r ".pull_request.head.ref" "$GITHUB_EVENT_PATH")
+        TARGET_BRANCH=$(jq -r ".pull_request.base.ref" "$GITHUB_EVENT_PATH")
+
+        echo $SOURCE_BRANCH
+        echo $TARGET_BRANCH
+
+        echo $(.pull_request)
+        
+        if [[ "$SOURCE_BRANCH" != "hotfix"* && "$SOURCE_BRANCH" != "release"* ]]; then
+          echo "Error: PR can only be merged from hotfix or release branches."
+          #exit 1
+        fi
