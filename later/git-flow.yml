@@ -20,6 +20,26 @@ jobs:
     - name: Install Git
       run: sudo apt-get install git -y
 
+    - name: Verify branch name
+      run: |
+        BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})
+        if [[ "$BRANCH_NAME" =~ ^(master|develop|feature/.*|hotfix/.*|release/.*)$ ]]; then
+          echo "Branch name is valid."
+        else
+          echo "Invalid branch name. Allowed patterns: master, develop, feature/*, hotfix/*, release/*"
+          exit 1
+        fi
+
+    - name: Verify commit messages (TODO ensure jira project)
+      run: |
+        git fetch origin ${GITHUB_REF}
+        git log --pretty=format:"%s" origin/${GITHUB_REF#refs/heads/}..HEAD | while read -r line ; do
+          if [[ ! "$line" =~ ^(feature|hotfix|release)/.* ]]; then
+            echo "Invalid commit message. Must start with 'feature/', 'hotfix/', or 'release/'."
+            exit 1
+          fi
+        done
+
     - name: Check git flow
       run: |
         SOURCE_BRANCH=$(jq -r ".pull_request.head.ref" "$GITHUB_EVENT_PATH")
