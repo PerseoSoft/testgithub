@@ -17,11 +17,19 @@ jobs:
     - name: Verify branch name
       run: |
         BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})
+
+        echo "asdfadsfasd"
+
+        echo $BRANCH_NAME
         if [[ "$BRANCH_NAME" =~ ^(master|develop|feature/.*|hotfix/.*|release/.*)$ ]]; then
             BRANCH_NAME_TARGET=$(jq --raw-output .pull_request.base.ref "$GITHUB_EVENT_PATH")
             if [[ "$BRANCH_NAME_TARGET" =~ ^(master|develop|feature/.*|hotfix/.*|release/.*)$ ]]; then
+              echo "sdfgsdfgsfdg"
+              echo $BRANCH_NAME_TARGET
               echo "Branch name is valid."
             else
+              echo "qwewqe"
+              echo $BRANCH_NAME_TARGET
               echo "Invalid TARGET branch name. Allowed patterns: master, develop, feature/*, hotfix/*, release/*"
               exit 1
             fi
