@@ -3,32 +3,44 @@ name: Auto-Create PR from Master to Develop
 on:
   workflow_dispatch:
 
+  
 jobs:
-  create-pr:
+  backport:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-
+      
     - name: Configure Git
       run: |
         git config --global user.email "action@github.com"
         git config --global user.name "GitHub Action"
-
-    - name: Create PR if develop is behind master
+      
+    - name: Fetch all branches and tags
+      run: git fetch --all --tags
+      
+    - name: Check commit diff between master and develop
+      id: commit_diff
       run: |
-        git fetch origin develop
-        git checkout develop
-        git merge origin/master --ff-only
+        DIFF=$(git rev-list --count origin/master..origin/develop)
+        echo "Commit difference: $DIFF"
+        echo "::set-output name=diff::$DIFF"
+      
+    - name: Create PR if master is ahead
+      if: steps.commit_diff.outputs.diff > 0
+      run: |
+        TOKEN="${{ secrets.GITHUB_TOKEN }}"
+        TITLE="Backport commits from master to develop"
+        BODY="This PR is an automated backport from master to develop due to forward commits in master."
+        HEAD="master"
+        BASE="develop"
         
-        # Check if develop is behind master
-        if git merge-base --is-ancestor origin/master develop; then
-          echo "develop is up-to-date with master."
-          exit 0
-        else
-          git push origin develop
-          hub pull-request -b develop -h master -m "Auto-create PR from master to develop"
-        fi
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        PR_URL=$(curl -X POST \
+          -H "Authorization: token $TOKEN" \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/${{ github.repository }}/pulls \
+          -d "{\"title\":\"$TITLE\",\"body\":\"$BODY\",\"head\":\"$HEAD\",\"base\":\"$BASE\"}" \
+          | jq -r .html_url)
+        
+        echo "Created PR: $PR_URL"
