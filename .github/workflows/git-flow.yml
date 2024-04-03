@@ -18,9 +18,15 @@ jobs:
       run: |
         BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})
         if [[ "$BRANCH_NAME" =~ ^(master|develop|feature/.*|hotfix/.*|release/.*)$ ]]; then
-          echo "Branch name is valid."
+            BRANCH_NAME_TARGET=$(jq --raw-output .pull_request.base.ref "$GITHUB_EVENT_PATH")
+            if [[ "$BRANCH_NAME_TARGET" =~ ^(master|develop|feature/.*|hotfix/.*|release/.*)$ ]]; then
+              echo "Branch name is valid."
+            else
+              echo "Invalid TARGET branch name. Allowed patterns: master, develop, feature/*, hotfix/*, release/*"
+              exit 1
+            fi
         else
-          echo "Invalid branch name. Allowed patterns: master, develop, feature/*, hotfix/*, release/*"
+          echo "Invalid SOURCE branch name. Allowed patterns: master, develop, feature/*, hotfix/*, release/*"
           exit 1
         fi
 
