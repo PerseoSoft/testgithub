@@ -20,7 +20,7 @@ jobs:
       run: |
         git fetch origin develop
         git checkout develop
-        git merge origin/master --ff-only  --allow-unrelated-histories
+        git merge origin/master --ff-only  
         
         # Check if develop is behind master
         if git merge-base --is-ancestor origin/master develop; then
